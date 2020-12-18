@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: juxt/crux-core:20.09-1.12.1-beta">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/juxt/crux-core/20.09-1.12.1-beta/crux-core-20.09-1.12.1-beta.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
