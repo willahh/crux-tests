@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: juxt/crux-lmdb:20.09-1.12.1-alpha">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/juxt/crux-lmdb/20.09-1.12.1-alpha/crux-lmdb-20.09-1.12.1-alpha.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

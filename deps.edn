@@ -1,1 +1,2 @@
-{:deps {juxt/crux-core {:mvn/version "20.09-1.12.1-beta"}}}
+{:deps {juxt/crux-core {:mvn/version "20.09-1.12.1-beta"}
+        juxt/crux-lmdb {:mvn/version "20.09-1.12.1-alpha"}}}

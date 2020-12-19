@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: org.lmdbjava/lmdbjava:0.7.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/lmdbjava/lmdbjava/0.7.0/lmdbjava-0.7.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
