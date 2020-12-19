@@ -285,3 +285,232 @@
 (crux/submit-tx
   node
   [[:crux.tx/put (assoc manifest :badges ["SETUP" "PUT" "DATALOG-QUERIES" "BITEMP"])]])
+
+
+
+;; Crux Saturn Assignment: Match Transactions
+(easy-ingest node
+             [{:crux.db/id :gold-harmony
+               :company-name "Gold Harmony"
+               :seller? true
+               :buyer? false
+               :units/Au 10211
+               :credits 51}
+
+              {:crux.db/id :tombaugh-resources
+               :company-name "Tombaugh Resources Ltd."
+               :seller? true
+               :buyer? false
+               :units/Pu 50
+               :units/N 3
+               :units/CH4 92
+               :credits 51}
+
+              {:crux.db/id :encompass-trade
+               :company-name "Encompass Trade"
+               :seller? true
+               :buyer? true
+               :units/Au 10
+               :units/Pu 5
+               :units/CH4 211
+               :credits 1002}
+
+              {:crux.db/id :blue-energy
+               :seller? false
+               :buyer? true
+               :company-name "Blue Energy"
+               :credits 1000}])
+
+(defn stock-check
+  [company-id item]
+  {:result (crux/q (crux/db node)
+                   {:find '[name funds stock]
+                     :where ['[e :company-name name]
+                             '[e :credits funds]
+                             ['e item 'stock]]
+                     :args [{'e company-id}]})
+   :item item})
+
+(defn format-stock-check
+  [{:keys [result item] :as stock-check}]
+  (for [[name funds commod] result]
+    (str "Name: " name ", Funds:" funds ", " item " " commod)))
+
+(crux/submit-tx
+  node
+  [[:crux.tx/match
+    :blue-energy
+    {:crux.db/id :blue-energy
+     :seller? false
+     :buyer? true
+     :company-name "Blue Energy"
+     :credits 1000}]
+   [:crux.tx/put
+    {:crux.db/id :blue-energy
+     :seller? false
+     :buyer? true
+     :company-name "Blue Energy"
+     :credits 900
+     :units/CH4 10}]
+
+   [:crux.tx/match
+    :tombaugh-resources
+    {:crux.db/id :tombaugh-resources
+     :company-name "Tombaugh Resources Ltd."
+     :seller? true
+     :buyer? false
+     :units/Pu 50
+     :units/N 3
+     :units/CH4 92
+     :credits 51}]
+   [:crux.tx/put
+    {:crux.db/id :tombaugh-resources
+     :company-name "Tombaugh Resources Ltd."
+     :seller? true
+     :buyer? false
+     :units/Pu 50
+     :units/N 3
+     :units/CH4 82
+     :credits 151}]])
+
+
+(format-stock-check (stock-check :tombaugh-resources :units/CH4))
+(format-stock-check (stock-check :blue-energy :units/CH4))
+
+
+(crux/submit-tx
+  node
+  [[:crux.tx/match
+    :gold-harmony
+    {:crux.db/id :gold-harmony
+     :company-name "Gold Harmony"
+     :seller? true
+     :buyer? false
+     :units/Au 10211
+     :credits 51}]
+   [:crux.tx/put
+    {:crux.db/id :gold-harmony
+     :company-name "Gold Harmony"
+     :seller? true
+     :buyer? false
+     :units/Au 211
+     :credits 51}]
+   [:crux.tx/match
+    :encompass-trade
+    {:crux.db/id :encompass-trade
+     :company-name "Encompass Trade"
+     :seller? true
+     :buyer? true
+     :units/Au 10
+     :units/Pu 5
+     :units/CH4 211
+     :credits 100002}]
+   [:crux.tx/put
+    {:crux.db/id :encompass-trade
+     :company-name "Encompass Trade"
+     :seller? true
+     :buyer? true
+     :units/Au 10010
+     :units/Pu 5
+     :units/CH4 211
+     :credits 1002}]])
+
+(format-stock-check (stock-check :gold-harmony :units/Au))
+(format-stock-check (stock-check :encompass-trade :units/Au))
+
+(crux/submit-tx
+  node [[:crux.tx/put
+         (assoc manifest
+           :badges ["SETUP" "PUT" "DATALOG-QUERIES" "BITEMP" "MATCH"])]])
+
+(crux/q (crux/db node)
+        {:find '[belongings]
+         :where '[[e :cargo belongings]]
+         :args [{'belongings "secret note"}]})
+
+;; Crux Jupiter Assignment: Delete Transactions
+(crux/submit-tx
+  node [[:crux.tx/put {:crux.db/id :kaarlang/clients
+                       :clients [:encompass-trade]}
+         #inst "2110-01-01T09"
+         #inst "2111-01-01T09"]
+
+        [:crux.tx/put {:crux.db/id :kaarlang/clients
+                       :clients [:encompass-trade :blue-energy]}
+         #inst "2111-01-01T09"
+         #inst "2113-01-01T09"]
+
+        [:crux.tx/put {:crux.db/id :kaarlang/clients
+                       :clients [:blue-energy]}
+         #inst "2113-01-01T09"
+         #inst "2114-01-01T09"]
+
+        [:crux.tx/put {:crux.db/id :kaarlang/clients
+                       :clients [:blue-energy :gold-harmony :tombaugh-resources]}
+         #inst "2114-01-01T09"
+         #inst "2115-01-01T09"]])
+
+(crux/entity-history
+  (crux/db node #inst "2116-01-01T09")
+  :kaarlang/clients
+  :desc
+  {:with-docs? true})
+
+(crux/submit-tx
+  node [[:crux.tx/delete :kaarlang/clients #inst "2110-01-01" #inst "2116-01-01"]])
+
+(crux/entity-history
+  (crux/db node #inst "2116-01-01T09")
+  :kaarlang/clients
+  :desc
+  {:with-docs? true})
+
+;; Crux 'Oumuamua Assignment: Evict Transactions
+(crux/submit-tx node
+                [[:crux.tx/put
+                  {:crux.db/id :person/kaarlang
+                   :full-name "Kaarlang"
+                   :origin-planet "Mars"
+                   :identity-tag :KA01299242093
+                   :DOB #inst "2040-11-23"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/ilex
+                   :full-name "Ilex Jefferson"
+                   :origin-planet "Venus"
+                   :identity-tag :IJ01222212454
+                   :DOB #inst "2061-02-17"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/thadd
+                   :full-name "Thad Christover"
+                   :origin-moon "Titan"
+                   :identity-tag :IJ01222212454
+                   :DOB #inst "2101-01-01"}]
+
+                 [:crux.tx/put
+                  {:crux.db/id :person/johanna
+                   :full-name "Johanna"
+                   :origin-planet "Earth"
+                   :identity-tag :JA012992129120
+                   :DOB #inst "2090-12-07"}]])
+
+(defn full-query
+  [node]
+  (crux/q
+    (crux/db node)
+    '{:find [id]
+      :where [[e :crux.db/id id]]
+      :full-results? true}))
+
+(full-query node)
+
+(crux/submit-tx node [[:crux.tx/evict :person/kaarlang]])
+
+(full-query node)
+
+(crux/entity-history
+  (crux/db node)
+  :person/kaarlang
+  :desc
+  {:with-docs? true})
